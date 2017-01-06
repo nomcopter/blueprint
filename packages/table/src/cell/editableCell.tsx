@@ -1,4 +1,3 @@
-
 /**
  * Copyright 2016 Palantir Technologies, Inc. All rights reserved.
  * Licensed under the BSD-3 License as modified (the “License”); you may obtain a copy
@@ -6,13 +5,16 @@
  * and https://github.com/palantir/blueprint/blob/master/PATENTS
  */
 
-import { Classes, EditableText } from "@blueprintjs/core";
 import * as classNames from "classnames";
 import * as React from "react";
-import { Draggable } from "../interactions/draggable";
-import { ICellProps } from "./cell";
 
-export interface IEditableCellProps extends ICellProps {
+import { Classes, EditableText } from "@blueprintjs/core";
+
+import { ILoadable, LoadableContent } from "../common/loadableContent";
+import { Draggable } from "../interactions/draggable";
+import { CELL_CLASSNAME, ICellProps } from "./cell";
+
+export interface IEditableCellProps extends ICellProps, ILoadable {
     /**
      * The value displayed in the text box. Be sure to update this value when
      * rendering this component after a confirmed change.
@@ -44,27 +46,37 @@ export class EditableCell extends React.Component<IEditableCellProps, {}> {
     private cellElement: HTMLElement;
 
     public render() {
-        const { className, value, intent, onCancel, onChange, onConfirm, style, tooltip } = this.props;
+        const { className, value, intent, loading, onCancel, onChange, onConfirm, style, tooltip } = this.props;
+
+        const classes = classNames(
+            CELL_CLASSNAME,
+            Classes.intentClass(intent),
+            { [Classes.LOADING]: loading },
+            className,
+        );
+
         return (
             <div
-                className={classNames(className, Classes.intentClass(intent), "bp-table-cell")}
+                className={classes}
+                ref={this.handleCellRef}
                 style={style}
                 title={tooltip}
-                ref={this.handleCellRef}
             >
-                <Draggable onDoubleClick={this.handleCellDoubleClick}>
-                    <EditableText
-                        className={"bp-table-editable-name"}
-                        defaultValue={value}
-                        intent={intent}
-                        minWidth={null}
-                        onCancel={onCancel}
-                        onChange={onChange}
-                        onConfirm={onConfirm}
-                        placeholder=""
-                        selectAllOnFocus={true}
-                    />
-                </Draggable>
+                <LoadableContent loading={loading} variableLength={true}>
+                    <Draggable onDoubleClick={this.handleCellDoubleClick}>
+                        <EditableText
+                            className={"bp-table-editable-name"}
+                            defaultValue={value}
+                            intent={intent}
+                            minWidth={null}
+                            onCancel={onCancel}
+                            onChange={onChange}
+                            onConfirm={onConfirm}
+                            placeholder=""
+                            selectAllOnFocus={true}
+                        />
+                    </Draggable>
+                </LoadableContent>
             </div>
         );
     }
@@ -74,7 +86,7 @@ export class EditableCell extends React.Component<IEditableCellProps, {}> {
     }
 
     private handleCellDoubleClick = (_event: MouseEvent) => {
-        if (this.cellElement == null) {
+        if (this.cellElement == null || this.props.loading) {
             return;
         }
 
