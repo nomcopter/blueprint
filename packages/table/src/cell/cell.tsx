@@ -31,6 +31,8 @@ export const loadingCellRenderer = () => <Cell loading={true} />;
 
 export const CELL_CLASSNAME = "bp-table-cell";
 
+export const CELL_CLASSNAME = "bp-table-cell";
+
 @PureRender
 export class Cell extends React.Component<ICellProps, {}> {
     public render() {
